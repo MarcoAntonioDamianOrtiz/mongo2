@@ -12,16 +12,27 @@ class PhoneScreen extends StatefulWidget {
 
 class _PhoneScreenState extends State<PhoneScreen> {
   List<PhoneModel> phones = [];
+  late TextEditingController _marcaController;
+  late TextEditingController _modeloController;
+  late TextEditingController _existenciaController;
+  late TextEditingController _precioController;
 
   @override
   void initState() {
     super.initState();
+    _marcaController = TextEditingController();
+    _modeloController = TextEditingController();
+    _existenciaController = TextEditingController();
+    _precioController = TextEditingController();
     _fetchPhones();
   }
 
   @override
   void dispose() {
-    // Destruir esta screen cuando la app salga de esta ventana
+    _marcaController.dispose();
+    _modeloController.dispose();
+    _existenciaController.dispose();
+    _precioController.dispose();
     super.dispose();
   }
 
@@ -51,6 +62,68 @@ class _PhoneScreenState extends State<PhoneScreen> {
     _fetchPhones();
   }
 
+  void _updatePhone(PhoneModel phone) async {
+    await MongoService().updatePhone(phone);
+    _fetchPhones();
+  }
+
+  void _showEditDialogo(PhoneModel phone) {
+    _marcaController.text = phone.marca;
+    _modeloController.text = phone.modelo;
+    _existenciaController.text = phone.existencia.toString();
+    _precioController.text = phone.precio.toString();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Editar telefono'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _marcaController,
+                decoration: const InputDecoration(labelText: 'Marca'),
+              ),
+              TextField(
+                controller: _modeloController,
+                decoration: const InputDecoration(labelText: 'Modelo'),
+              ),
+              TextField(
+                controller: _existenciaController,
+                decoration: const InputDecoration(labelText: 'Existencia'),
+              ),
+              TextField(
+                controller: _precioController,
+                decoration: const InputDecoration(labelText: 'Precio'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Recuperar los nuevos valores de los controladores
+                phone.marca = _marcaController.text;
+                phone.modelo = _modeloController.text;
+                phone.existencia = int.parse(_existenciaController.text);
+                phone.precio = double.parse(_precioController.text);
+                _updatePhone(phone);
+                Navigator.pop(context);
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   ListTile oneTile(PhoneModel phone) {
     return ListTile(
       title: Text(phone.marca),
@@ -58,7 +131,9 @@ class _PhoneScreenState extends State<PhoneScreen> {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const IconButton(onPressed: null, icon: Icon(Icons.edit)),
+          IconButton(
+              onPressed: () => _showEditDialogo(phone),
+              icon: const Icon(Icons.edit)),
           IconButton(
             onPressed: () {
               _deletePhone(phone.id);
