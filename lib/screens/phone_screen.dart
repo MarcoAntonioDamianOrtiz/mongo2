@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mongo2/models/phone_model.dart';
+import 'package:mongo2/screens/insert_phone_screen.dart';
 import 'package:mongo2/services/mongo_service.dart';
 import 'package:mongo_dart/mongo_dart.dart' as mongo;
 
@@ -41,6 +42,25 @@ class _PhoneScreenState extends State<PhoneScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inventario de telefonos'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 5.0),
+            child: GestureDetector(
+              onTap: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const InsertPhoneScreen(),
+                  ),
+                );
+                _fetchPhones();
+              },
+              child: const Icon(
+                Icons.add,
+                size: 40.0,
+              ),
+            ),
+          )
+        ],
       ),
       body: ListView.builder(
           itemCount: phones.length,
@@ -126,8 +146,17 @@ class _PhoneScreenState extends State<PhoneScreen> {
 
   ListTile oneTile(PhoneModel phone) {
     return ListTile(
+      leading: const Icon(Icons.phone_android),
       title: Text(phone.marca),
-      subtitle: Text(phone.modelo),
+      subtitle: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(phone.modelo),
+          Text('Existencia: ${phone.existencia}'),
+          Text('Precio: \$${phone.precio}'),
+        ],
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

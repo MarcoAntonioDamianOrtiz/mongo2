@@ -67,4 +67,13 @@ class MongoService {
     var collection = _db.collection('celulares');
     await collection.remove(mongo.where.eq('_id', id));
   }
+
+  Future<void> InsertPhone(PhoneModel phone) async {
+    final collection = _db.collection('celulares');
+    await collection.insertOne(phone.toJson());
+  }
+
+  void close() {
+    _db.close();
+  }
 }
